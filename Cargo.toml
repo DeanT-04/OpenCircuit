@@ -1,0 +1,80 @@
+[package]
+name = "opencircuit"
+version = "0.1.0"
+edition = "2021"
+authors = ["OpenCircuit Team"]
+description = "AI-powered circuit design and PCB layout tool"
+license = "MIT"
+repository = "https://github.com/opencircuit/opencircuit"
+keywords = ["circuit", "pcb", "ai", "electronics", "design"]
+categories = ["science", "simulation", "gui"]
+
+[dependencies]
+# Core Framework (will be added in later tasks)
+# tauri = { version = "2.0", features = ["shell-open"] }
+# egui = "0.29"
+# eframe = "0.29"
+
+# AI/ML Integration (will be added in later tasks)
+# reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+tokio = { version = "1.0", features = ["full", "macros"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Data Management (will be added in later tasks)
+# sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio-rustls"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Circuit Simulation (will be added when NgSpice integration is implemented)
+# ngspice-sys = "0.1"  # Uncomment when implementing NgSpice integration
+
+# Utilities
+anyhow = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+chrono = { version = "0.4", features = ["serde"] }
+config = "0.14"
+dirs = "5.0"
+
+# Development dependencies
+[dev-dependencies]
+criterion = "0.5"
+proptest = "1.0"
+tempfile = "3.0"
+tokio-test = "0.4"
+
+# Workspace configuration for future modules
+[workspace]
+members = [
+    ".",
+    # Future workspace members will be added here
+    # "crates/circuit-sim",
+    # "crates/pcb-engine", 
+    # "crates/ai-core",
+]
+
+# Build configuration
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true
+overflow-checks = true
+
+# Metadata for cargo-generate and documentation
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[[bin]]
+name = "opencircuit"
+path = "src/main.rs"
+
+[lib]
+name = "opencircuit"
+path = "src/lib.rs"

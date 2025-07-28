@@ -1,0 +1,11 @@
+C:\Users\deana\Documents\Coding projects\projects\OpenCircuit\OpenCircuit\target\debug\deps\libsocket2-06dcea0ca958cb95.rmeta: C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\lib.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sockaddr.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\socket.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sockref.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sys\windows.rs
+
+C:\Users\deana\Documents\Coding projects\projects\OpenCircuit\OpenCircuit\target\debug\deps\libsocket2-06dcea0ca958cb95.rlib: C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\lib.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sockaddr.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\socket.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sockref.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sys\windows.rs
+
+C:\Users\deana\Documents\Coding projects\projects\OpenCircuit\OpenCircuit\target\debug\deps\socket2-06dcea0ca958cb95.d: C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\lib.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sockaddr.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\socket.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sockref.rs C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sys\windows.rs
+
+C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\lib.rs:
+C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sockaddr.rs:
+C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\socket.rs:
+C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sockref.rs:
+C:\Users\deana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\socket2-0.6.0\src\sys\windows.rs:
