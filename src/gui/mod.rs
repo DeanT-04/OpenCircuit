@@ -1,41 +1,49 @@
 //! GUI module for the OpenCircuit user interface
 //! 
-//! This module will contain:
+//! This module contains:
 //! - egui-based three-panel layout
 //! - Chat interface
 //! - Circuit visualization
 //! - Research console animation
 
-use crate::OpenCircuitResult;
+pub mod app;
 
-/// Main application state
-#[derive(Default)]
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
+/// Application state that persists across the GUI
+#[derive(Debug, Clone, Default)]
 pub struct AppState {
     pub chat_messages: Vec<ChatMessage>,
-    pub current_circuit: Option<String>,
+    pub current_circuit: Option<String>, // Placeholder for circuit data
     pub research_status: ResearchStatus,
 }
 
-/// Chat message representation
-#[derive(Debug, Clone)]
+/// Represents a chat message in the conversation
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatMessage {
     pub id: String,
     pub content: String,
     pub is_user: bool,
-    pub timestamp: chrono::DateTime<chrono::Utc>,
+    pub timestamp: DateTime<Utc>,
 }
 
-/// Research console status
-#[derive(Debug, Clone, Default)]
+/// Status of the research console
+#[derive(Debug, Clone, PartialEq)]
 pub enum ResearchStatus {
-    #[default]
     Idle,
     Searching,
     Analyzing,
     Complete,
 }
 
-/// Main GUI application
+impl Default for ResearchStatus {
+    fn default() -> Self {
+        Self::Idle
+    }
+}
+
+/// Main OpenCircuit application
 pub struct OpenCircuitApp {
     state: AppState,
 }
@@ -46,20 +54,17 @@ impl OpenCircuitApp {
             state: AppState::default(),
         }
     }
-    
-    pub fn run() -> OpenCircuitResult<()> {
-        // TODO: Implement egui application
-        tracing::info!("GUI application would start here");
-        println!("🖥️  GUI framework ready for implementation");
-        Ok(())
+
+    pub fn run() -> crate::OpenCircuitResult<()> {
+        app::run_app()
     }
-    
-    pub fn add_chat_message(&mut self, content: String, is_user: bool) {
+
+    pub fn add_chat_message(&mut self, sender: String, content: String) {
         let message = ChatMessage {
             id: uuid::Uuid::new_v4().to_string(),
             content,
-            is_user,
-            timestamp: chrono::Utc::now(),
+            is_user: sender == "User",
+            timestamp: Utc::now(),
         };
         self.state.chat_messages.push(message);
     }
@@ -78,14 +83,15 @@ mod tests {
     #[test]
     fn test_app_creation() {
         let app = OpenCircuitApp::new();
-        assert!(app.state.chat_messages.is_empty());
+        assert_eq!(app.state.chat_messages.len(), 0);
         assert!(app.state.current_circuit.is_none());
+        assert_eq!(app.state.research_status, ResearchStatus::Idle);
     }
-    
+
     #[test]
-    fn test_chat_message_addition() {
+    fn test_add_chat_message() {
         let mut app = OpenCircuitApp::new();
-        app.add_chat_message("Hello".to_string(), true);
+        app.add_chat_message("User".to_string(), "Hello".to_string());
         
         assert_eq!(app.state.chat_messages.len(), 1);
         assert_eq!(app.state.chat_messages[0].content, "Hello");

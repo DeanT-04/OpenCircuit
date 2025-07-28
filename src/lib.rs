@@ -4,7 +4,7 @@ use tracing::{info, warn};
 mod ai;
 mod circuit;
 mod database;
-mod gui;
+pub mod gui;
 mod pcb;
 mod utils;
 

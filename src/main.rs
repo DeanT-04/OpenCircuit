@@ -1,5 +1,6 @@
 use anyhow::Result;
 use opencircuit::{init, Config};
+use opencircuit::gui::OpenCircuitApp;
 use tracing::{error, info};
 
 fn main() -> Result<()> {
@@ -11,37 +12,24 @@ fn main() -> Result<()> {
     info!("Starting OpenCircuit v{}", opencircuit::VERSION);
     info!("Data directory: {}", config.data_dir.display());
     
-    // For now, just print a welcome message
-    // The GUI will be implemented in the next task
     println!("🔌 Welcome to OpenCircuit!");
     println!("AI-powered circuit design and PCB layout tool");
     println!();
-    println!("Current status: Foundation setup complete");
-    println!("Next: Tauri application framework setup");
-    println!();
-    println!("Configuration:");
-    println!("  - Data directory: {}", config.data_dir.display());
-    println!("  - Database: {}", config.database_url);
-    println!("  - AI API: {}", if config.ai_api_key.is_some() { "Configured" } else { "Not configured" });
+    println!("Launching GUI application...");
     
-    // Test basic functionality
-    test_basic_functionality()?;
+    // Launch the GUI application
+    match OpenCircuitApp::run() {
+        Ok(_) => {
+            info!("GUI application closed successfully");
+        }
+        Err(e) => {
+            error!("GUI application error: {}", e);
+            eprintln!("Error running GUI: {}", e);
+            return Err(e.into());
+        }
+    }
     
-    info!("OpenCircuit initialization completed successfully");
-    Ok(())
-}
-
-fn test_basic_functionality() -> Result<()> {
-    info!("Running basic functionality tests...");
-    
-    // Test configuration loading
-    let _config = Config::load()?;
-    info!("✅ Configuration loading works");
-    
-    // Test logging
-    info!("✅ Logging system works");
-    
-    println!("✅ All basic functionality tests passed!");
+    info!("OpenCircuit session completed");
     Ok(())
 }
 

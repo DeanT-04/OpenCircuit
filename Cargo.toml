@@ -12,8 +12,9 @@ categories = ["science", "simulation", "gui"]
 [dependencies]
 # Core Framework
 tauri = { version = "2.7.0", features = ["macos-private-api"], optional = true }
-# egui = "0.29"  # Will be added in next task
-# eframe = "0.29"  # Will be added in next task
+# egui = "0.26"  # Temporarily disabled due to edition2024 dependency issue
+# eframe = "0.26"  # Will be re-enabled once cargo registry issue is resolved
+# egui_extras = "0.26"
 
 # AI/ML Integration (will be added in later tasks)
 # reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
