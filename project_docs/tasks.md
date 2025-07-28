@@ -50,17 +50,17 @@
   - [x] Test panel resizing functionality
 
 ### ✅ Task: Setup Database Schema and Connections
-- **Status**: ⬜ Not Started
+- **Status**: ✅ Done
 - **Output File(s)**: `src/database/mod.rs`, `src/database/schema.rs`, `migrations/001_initial.sql`
 - **Description**: Initialize SQLite database with component schema and establish connection management.
 - **Docs to Reference**:
   - [Database Overview](../docs/database/overview.md)
   - [Embedded Databases](../docs/database/embedded.md)
 - **Must-Do After Task Completion**:
-  - [ ] Test database creation and migration
-  - [ ] Verify CRUD operations work correctly
-  - [ ] Create milestone file `milestones/setup_database_schema.md`
-  - [ ] Test database file encryption
+  - [x] Test database creation and migration
+  - [x] Verify CRUD operations work correctly
+  - [x] Create milestone file `milestones/setup_database_schema_and_connections.md`
+  - [x] Test database file encryption
 
 ---
 
