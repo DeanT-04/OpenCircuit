@@ -29,6 +29,11 @@ pub fn init() -> Result<()> {
     Ok(())
 }
 
+/// Initialize the OpenCircuit library (alias for Tauri compatibility)
+pub fn initialize() -> Result<()> {
+    init()
+}
+
 /// Core application configuration
 #[derive(Debug, Clone)]
 pub struct Config {

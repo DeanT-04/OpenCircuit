@@ -1,0 +1,36 @@
+[package]
+name = "opencircuit-tauri"
+version = "0.1.0"
+description = "OpenCircuit - AI-powered circuit design and PCB layout tool"
+authors = ["OpenCircuit Team"]
+license = "MIT"
+repository = "https://github.com/opencircuit/opencircuit"
+edition = "2021"
+rust-version = "1.75.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "opencircuit_tauri"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.3.1", features = [] }
+
+[dependencies]
+# Core Tauri dependencies
+tauri = { version = "2.7.0", features = ["macos-private-api"] }
+tauri-plugin-log = "2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"
+
+# Integration with main OpenCircuit library
+opencircuit = { path = ".." }
+
+# Async runtime
+tokio = { version = "1.0", features = ["full"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"

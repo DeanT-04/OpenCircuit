@@ -10,10 +10,10 @@ keywords = ["circuit", "pcb", "ai", "electronics", "design"]
 categories = ["science", "simulation", "gui"]
 
 [dependencies]
-# Core Framework (will be added in later tasks)
-# tauri = { version = "2.0", features = ["shell-open"] }
-# egui = "0.29"
-# eframe = "0.29"
+# Core Framework
+tauri = { version = "2.7.0", features = ["macos-private-api"], optional = true }
+# egui = "0.29"  # Will be added in next task
+# eframe = "0.29"  # Will be added in next task
 
 # AI/ML Integration (will be added in later tasks)
 # reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
@@ -48,6 +48,7 @@ tokio-test = "0.4"
 [workspace]
 members = [
     ".",
+    "src-tauri",
     # Future workspace members will be added here
     # "crates/circuit-sim",
     # "crates/pcb-engine", 

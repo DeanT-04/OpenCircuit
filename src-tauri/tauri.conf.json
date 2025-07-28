@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "OpenCircuit",
+  "version": "0.1.0",
+  "identifier": "com.opencircuit.desktop",
+  "build": {
+    "frontendDist": "../dist",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": ""
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "OpenCircuit - AI-Powered Circuit Design",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1200,
+        "minHeight": 800,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "decorations": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
+        "theme": "Dark"
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "macOSPrivateApi": true
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "OpenCircuit Team",
+    "category": "DeveloperTool",
+    "shortDescription": "AI-powered circuit design and PCB layout tool",
+    "longDescription": "OpenCircuit is an innovative desktop application that combines artificial intelligence with traditional circuit design workflows. Create, simulate, and layout PCBs with intelligent assistance.",
+    "copyright": "Copyright © 2025 OpenCircuit Team. All rights reserved.",
+    "licenseFile": "../LICENSE"
+  },
+  "plugins": {}
+}
