@@ -1,19 +1,22 @@
 use anyhow::Result;
 use tracing::{info, warn};
 
-mod ai;
-mod circuit;
-mod database;
-pub mod gui;
-mod pcb;
-mod utils;
+// Re-export the crates for easy access
+pub use opencircuit_ai as ai;
+pub use opencircuit_circuit as circuit;
+pub use opencircuit_core as core;
+pub use opencircuit_database as database;
+pub use opencircuit_gui as gui;
+pub use opencircuit_pcb as pcb;
+pub use opencircuit_utils as utils;
 
-pub use ai::*;
-pub use circuit::*;
-pub use database::*;
-pub use gui::*;
-pub use pcb::*;
-pub use utils::*;
+// Re-export commonly used types
+pub use opencircuit_core::{OpenCircuitError, AppConfig, Project, Position, Size, Rect};
+pub use opencircuit_ai::{AiService, AiConfig, AiResponse, AiModel};
+pub use opencircuit_circuit::{Circuit, Component, ComponentType};
+pub use opencircuit_database::{Database, ComponentRecord};
+pub use opencircuit_gui::{OpenCircuitApp, AppState};
+pub use opencircuit_pcb::{PcbDesign, ComponentPlacement, Trace};
 
 /// OpenCircuit library version
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -34,7 +37,7 @@ pub fn initialize() -> Result<()> {
     init()
 }
 
-/// Core application configuration
+/// Core application configuration (legacy compatibility)
 #[derive(Debug, Clone)]
 pub struct Config {
     pub database_url: String,
@@ -76,32 +79,7 @@ impl Config {
     }
 }
 
-/// Application error types
-#[derive(Debug, thiserror::Error)]
-pub enum OpenCircuitError {
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
-    
-    #[error("Configuration error: {0}")]
-    Config(String),
-    
-    #[error("AI service error: {0}")]
-    Ai(String),
-    
-    #[error("Circuit simulation error: {0}")]
-    Circuit(String),
-    
-    #[error("Database error: {0}")]
-    Database(String),
-    
-    #[error("GUI error: {0}")]
-    Gui(String),
-    
-    #[error("PCB design error: {0}")]
-    Pcb(String),
-}
-
-/// Result type alias for OpenCircuit operations
+/// Result type alias for OpenCircuit operations (legacy compatibility)
 pub type OpenCircuitResult<T> = std::result::Result<T, OpenCircuitError>;
 
 #[cfg(test)]

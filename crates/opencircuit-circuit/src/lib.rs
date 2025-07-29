@@ -6,8 +6,6 @@
 //! - Circuit analysis algorithms
 //! - Component models
 
-use crate::OpenCircuitResult;
-
 /// Circuit component representation
 #[derive(Debug, Clone)]
 pub struct Component {
@@ -59,7 +57,7 @@ impl Circuit {
         self.connections.push(connection);
     }
     
-    pub fn to_spice_netlist(&self) -> OpenCircuitResult<String> {
+    pub fn to_spice_netlist(&self) -> Result<String, anyhow::Error> {
         // TODO: Implement SPICE netlist generation
         Ok("* OpenCircuit Generated Netlist\n.end\n".to_string())
     }

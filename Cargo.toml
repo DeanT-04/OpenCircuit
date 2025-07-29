@@ -10,31 +10,26 @@ keywords = ["circuit", "pcb", "ai", "electronics", "design"]
 categories = ["science", "simulation", "gui"]
 
 [dependencies]
+# OpenCircuit Crates
+opencircuit-core = { path = "crates/opencircuit-core" }
+opencircuit-ai = { path = "crates/opencircuit-ai" }
+opencircuit-circuit = { path = "crates/opencircuit-circuit" }
+opencircuit-pcb = { path = "crates/opencircuit-pcb" }
+opencircuit-gui = { path = "crates/opencircuit-gui" }
+opencircuit-database = { path = "crates/opencircuit-database" }
+opencircuit-utils = { path = "crates/opencircuit-utils" }
+
 # Core Framework
 tauri = { version = "2.7.0", features = ["macos-private-api"], optional = true }
 # egui = "0.24"  # Temporarily disabled due to edition2024 dependency issue
 # eframe = "0.24"  # Will be re-enabled once dependency issue is resolved
 # egui_extras = "0.24"
 
-# AI/ML Integration (will be added in later tasks)
-# reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
-tokio = { version = "1.0", features = ["full", "macros"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-
-# Circuit Simulation (will be added when NgSpice integration is implemented)
-# ngspice-sys = "0.1"  # Uncomment when implementing NgSpice integration
-
 # Utilities
-uuid = { version = "1.0", features = ["v4", "serde"] }
 anyhow = "1.0"
-thiserror = "1.0"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-chrono = { version = "0.4", features = ["serde"] }
-config = "0.14"
 dirs = "5.0"
-rusqlite = { version = "0.37.0", features = ["bundled"] }
 
 # Development dependencies
 [dev-dependencies]
@@ -48,10 +43,13 @@ tokio-test = "0.4"
 members = [
     ".",
     "src-tauri",
-    # Future workspace members will be added here
-    # "crates/circuit-sim",
-    # "crates/pcb-engine", 
-    # "crates/ai-core",
+    "crates/opencircuit-core",
+    "crates/opencircuit-ai",
+    "crates/opencircuit-circuit",
+    "crates/opencircuit-pcb",
+    "crates/opencircuit-gui",
+    "crates/opencircuit-database",
+    "crates/opencircuit-utils",
 ]
 
 # Build configuration

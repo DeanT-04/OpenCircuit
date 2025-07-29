@@ -142,13 +142,10 @@ pub fn get_database_path() -> Result<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::tempdir;
 
     #[test]
     fn test_database_initialization() {
-        let temp_dir = tempdir().unwrap();
-        let db_path = temp_dir.path().join("test.db");
-        let conn = Connection::open(&db_path).unwrap();
+        let conn = Connection::open_in_memory().unwrap();
         
         run_migrations(&conn).unwrap();
         
@@ -166,9 +163,7 @@ mod tests {
 
     #[test]
     fn test_migration_idempotency() {
-        let temp_dir = tempdir().unwrap();
-        let db_path = temp_dir.path().join("test.db");
-        let conn = Connection::open(&db_path).unwrap();
+        let conn = Connection::open_in_memory().unwrap();
         
         // Run migrations twice
         run_migrations(&conn).unwrap();

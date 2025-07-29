@@ -1,0 +1,25 @@
+[package]
+name = "opencircuit-core"
+version = "0.1.0"
+edition = "2021"
+authors = ["OpenCircuit Team"]
+description = "Core functionality for the OpenCircuit application"
+license = "MIT"
+repository = "https://github.com/opencircuit/opencircuit"
+
+[dependencies]
+thiserror = "1.0"
+anyhow = "1.0"
+tracing = "0.1"
+config = "0.14"
+dirs = "5.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+toml = "0.8"
+opencircuit-utils = { path = "../opencircuit-utils" }
+
+[dev-dependencies]
+rstest = "0.18"

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use rusqlite::{Connection, params, Row};
+use rusqlite::{Connection, params};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 
@@ -304,7 +304,6 @@ impl Database {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::tempdir;
     use uuid::Uuid;
 
     fn create_test_component() -> ComponentRecord {
@@ -325,9 +324,7 @@ mod tests {
 
     #[test]
     fn test_database_creation() {
-        let temp_dir = tempdir().unwrap();
-        let db_path = temp_dir.path().join("test.db");
-        let conn = rusqlite::Connection::open(&db_path).unwrap();
+        let conn = rusqlite::Connection::open_in_memory().unwrap();
         schema::run_migrations(&conn).unwrap();
         
         let db = Database {
@@ -340,9 +337,7 @@ mod tests {
 
     #[test]
     fn test_component_crud() {
-        let temp_dir = tempdir().unwrap();
-        let db_path = temp_dir.path().join("test.db");
-        let conn = rusqlite::Connection::open(&db_path).unwrap();
+        let conn = rusqlite::Connection::open_in_memory().unwrap();
         schema::run_migrations(&conn).unwrap();
         
         let db = Database {
@@ -380,9 +375,7 @@ mod tests {
 
     #[test]
     fn test_component_search() {
-        let temp_dir = tempdir().unwrap();
-        let db_path = temp_dir.path().join("test.db");
-        let conn = rusqlite::Connection::open(&db_path).unwrap();
+        let conn = rusqlite::Connection::open_in_memory().unwrap();
         schema::run_migrations(&conn).unwrap();
         
         let db = Database {
@@ -408,9 +401,7 @@ mod tests {
 
     #[test]
     fn test_categories() {
-        let temp_dir = tempdir().unwrap();
-        let db_path = temp_dir.path().join("test.db");
-        let conn = rusqlite::Connection::open(&db_path).unwrap();
+        let conn = rusqlite::Connection::open_in_memory().unwrap();
         schema::run_migrations(&conn).unwrap();
         
         let db = Database {

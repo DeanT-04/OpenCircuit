@@ -13,22 +13,19 @@ pub mod app;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use anyhow::Result;
+use opencircuit_core::OpenCircuitError;
+use uuid::Uuid;
+
+/// Type alias for GUI-specific results
+pub type OpenCircuitResult<T> = Result<T, OpenCircuitError>;
 
 /// Application state that persists across the GUI
 #[derive(Debug, Clone, Default)]
 pub struct AppState {
-    pub chat_messages: Vec<ChatMessage>,
+    pub chat_messages: Vec<opencircuit_ai::chat_handler::ChatMessage>,
     pub current_circuit: Option<String>, // Placeholder for circuit data
     pub research_status: ResearchStatus,
-}
-
-/// Represents a chat message in the conversation
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatMessage {
-    pub id: String,
-    pub content: String,
-    pub is_user: bool,
-    pub timestamp: DateTime<Utc>,
 }
 
 /// Status of the research console
@@ -58,15 +55,18 @@ impl OpenCircuitApp {
         }
     }
 
-    pub fn run() -> crate::OpenCircuitResult<()> {
-        // Temporarily using console interface due to egui dependency issues
-        // Will switch to egui once edition2024 dependency issue is resolved
-        app::run_app()
+    pub fn run() -> Result<()> {
+        let rt = tokio::runtime::Runtime::new()
+            .map_err(|e| anyhow::anyhow!("Failed to create tokio runtime: {}", e))?;
+        
+        rt.block_on(async {
+            app::run_app().await
+        }).map_err(|e| anyhow::anyhow!("GUI error: {}", e))
     }
 
     pub fn add_chat_message(&mut self, sender: String, content: String) {
-        let message = ChatMessage {
-            id: uuid::Uuid::new_v4().to_string(),
+        let message = opencircuit_ai::chat_handler::ChatMessage {
+            id: Uuid::new_v4().to_string(),
             content,
             is_user: sender == "User",
             timestamp: Utc::now(),

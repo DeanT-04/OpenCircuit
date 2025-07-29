@@ -6,7 +6,6 @@
 //! - Design rule checking (DRC)
 //! - Via optimization
 
-use crate::OpenCircuitResult;
 use serde::{Deserialize, Serialize};
 
 /// PCB component placement
@@ -65,7 +64,7 @@ impl PcbDesign {
         self.traces.push(trace);
     }
     
-    pub fn run_drc(&self) -> OpenCircuitResult<Vec<DrcViolation>> {
+    pub fn run_drc(&self) -> Result<Vec<DrcViolation>, anyhow::Error> {
         // TODO: Implement design rule checking
         Ok(Vec::new())
     }

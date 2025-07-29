@@ -6,7 +6,6 @@
 //! - Constants and enumerations
 //! - File I/O utilities
 
-use crate::OpenCircuitResult;
 use std::path::Path;
 
 /// Application constants
@@ -20,8 +19,6 @@ pub mod constants {
 
 /// File format utilities
 pub mod file_formats {
-    use super::*;
-    
     /// Supported export formats
     #[derive(Debug, Clone)]
     pub enum ExportFormat {
@@ -47,7 +44,7 @@ pub mod file_formats {
 
 /// Validation utilities
 pub mod validation {
-    use super::*;
+    use std::path::Path;
     
     /// Validate component part number format
     pub fn validate_part_number(part_number: &str) -> bool {
@@ -60,14 +57,14 @@ pub mod validation {
     }
     
     /// Validate file path
-    pub fn validate_file_path(path: &Path) -> OpenCircuitResult<()> {
+    pub fn validate_file_path(path: &Path) -> Result<(), std::io::Error> {
         if path.exists() {
             Ok(())
         } else {
-            Err(crate::OpenCircuitError::Io(std::io::Error::new(
+            Err(std::io::Error::new(
                 std::io::ErrorKind::NotFound,
                 format!("File not found: {}", path.display()),
-            )))
+            ))
         }
     }
 }

@@ -3,11 +3,20 @@
 //! This module manages the chat conversation flow, message processing,
 //! and integration with AI services for circuit design assistance.
 
-use crate::gui::ChatMessage;
-use crate::OpenCircuitResult;
+use crate::AiResult;
 use chrono::Utc;
 use std::collections::VecDeque;
 use tokio::time::{sleep, Duration};
+use uuid::Uuid;
+
+/// Chat message structure
+#[derive(Debug, Clone)]
+pub struct ChatMessage {
+    pub id: String,
+    pub content: String,
+    pub is_user: bool,
+    pub timestamp: chrono::DateTime<chrono::Utc>,
+}
 
 /// Maximum number of messages to keep in conversation history
 const MAX_CONVERSATION_HISTORY: usize = 50;
@@ -74,10 +83,10 @@ Always aim to help users create better, more reliable circuit designs."#.to_stri
     }
 
     /// Process a user message and generate an AI response
-    pub async fn process_message(&mut self, user_message: &str) -> OpenCircuitResult<ChatMessage> {
+    pub async fn process_message(&mut self, user_message: &str) -> AiResult<ChatMessage> {
         if self.is_processing {
             return Ok(ChatMessage {
-                id: uuid::Uuid::new_v4().to_string(),
+                id: Uuid::new_v4().to_string(),
                 content: "I'm still processing your previous message. Please wait a moment.".to_string(),
                 is_user: false,
                 timestamp: Utc::now(),
@@ -88,7 +97,7 @@ Always aim to help users create better, more reliable circuit designs."#.to_stri
 
         // Add user message to history
         let user_msg = ChatMessage {
-            id: uuid::Uuid::new_v4().to_string(),
+            id: Uuid::new_v4().to_string(),
             content: user_message.to_string(),
             is_user: true,
             timestamp: Utc::now(),
@@ -102,7 +111,7 @@ Always aim to help users create better, more reliable circuit designs."#.to_stri
         let response_content = self.generate_contextual_response(user_message).await?;
 
         let ai_response = ChatMessage {
-            id: uuid::Uuid::new_v4().to_string(),
+            id: Uuid::new_v4().to_string(),
             content: response_content,
             is_user: false,
             timestamp: Utc::now(),
@@ -115,7 +124,7 @@ Always aim to help users create better, more reliable circuit designs."#.to_stri
     }
 
     /// Generate a contextual response based on the user's message and conversation history
-    async fn generate_contextual_response(&self, user_message: &str) -> OpenCircuitResult<String> {
+    async fn generate_contextual_response(&self, user_message: &str) -> AiResult<String> {
         let message_lower = user_message.to_lowercase();
         
         // Analyze message for circuit design topics
@@ -155,11 +164,12 @@ Always aim to help users create better, more reliable circuit designs."#.to_stri
     }
 
     fn is_greeting(&self, message: &str) -> bool {
+        let message_lower = message.to_lowercase();
         let greetings = ["hello", "hi", "hey", "good morning", "good afternoon", "good evening"];
-        greetings.iter().any(|&greeting| message.contains(greeting))
+        greetings.iter().any(|&greeting| message_lower.contains(greeting))
     }
 
-    async fn generate_circuit_response(&self, message: &str) -> OpenCircuitResult<String> {
+    async fn generate_circuit_response(&self, message: &str) -> AiResult<String> {
         if message.contains("amplifier") {
             Ok("🔊 For amplifier design, key considerations include:\n\n• Gain requirements and bandwidth\n• Input/output impedance matching\n• Power supply voltage and current\n• Noise and distortion specifications\n• Stability and compensation\n\nWhat type of amplifier are you designing? (op-amp, discrete, RF, audio, etc.)".to_string())
         } else if message.contains("filter") {
@@ -171,7 +181,7 @@ Always aim to help users create better, more reliable circuit designs."#.to_stri
         }
     }
 
-    async fn generate_component_response(&self, message: &str) -> OpenCircuitResult<String> {
+    async fn generate_component_response(&self, message: &str) -> AiResult<String> {
         if message.contains("resistor") {
             Ok("🔧 Resistor selection considerations:\n\n• Resistance value and tolerance (1%, 5%, etc.)\n• Power rating (1/8W, 1/4W, 1/2W, etc.)\n• Temperature coefficient (ppm/°C)\n• Package type (0603, 0805, through-hole)\n• Special types (precision, high-power, current sense)\n\nWhat's your target resistance and power requirement?".to_string())
         } else if message.contains("capacitor") {
@@ -183,7 +193,7 @@ Always aim to help users create better, more reliable circuit designs."#.to_stri
         }
     }
 
-    async fn generate_pcb_response(&self, message: &str) -> OpenCircuitResult<String> {
+    async fn generate_pcb_response(&self, message: &str) -> AiResult<String> {
         if message.contains("layout") || message.contains("placement") {
             Ok("📋 PCB layout best practices:\n\n• Component placement for signal flow\n• Minimize trace lengths for high-speed signals\n• Proper ground plane design\n• Thermal considerations and heat dissipation\n• Manufacturing constraints (drill sizes, trace width)\n• EMI/EMC considerations\n\nWhat type of circuit are you laying out?".to_string())
         } else if message.contains("routing") || message.contains("trace") {
@@ -193,7 +203,7 @@ Always aim to help users create better, more reliable circuit designs."#.to_stri
         }
     }
 
-    async fn generate_simulation_response(&self, message: &str) -> OpenCircuitResult<String> {
+    async fn generate_simulation_response(&self, _message: &str) -> AiResult<String> {
         Ok("📊 Circuit simulation is essential for design verification:\n\n• DC operating point analysis\n• AC frequency response\n• Transient time-domain analysis\n• Monte Carlo tolerance analysis\n• Temperature and process variations\n• Worst-case design verification\n\nWhat type of analysis do you need for your circuit? I can help you set up the appropriate simulation parameters.".to_string())
     }
 
@@ -201,7 +211,7 @@ Always aim to help users create better, more reliable circuit designs."#.to_stri
         "👋 Hello! I'm your OpenCircuit AI assistant, ready to help with all your electronics design needs!\n\n🔧 I can assist with:\n• Circuit design and analysis\n• Component selection and specifications\n• PCB layout optimization\n• Simulation setup and interpretation\n• Design troubleshooting\n\nWhat electronics project are you working on today?".to_string()
     }
 
-    async fn generate_general_response(&self, user_message: &str) -> OpenCircuitResult<String> {
+    async fn generate_general_response(&self, user_message: &str) -> AiResult<String> {
         Ok(format!("🤖 I understand you're asking about: \"{}\"\n\nI'm here to help with electronics and circuit design. Could you provide more context about your project or question? For example:\n\n• What type of circuit are you working on?\n• What specific challenge are you facing?\n• Are you looking for component recommendations?\n• Do you need help with PCB layout?\n\nThe more details you provide, the better I can assist you!", user_message))
     }
 

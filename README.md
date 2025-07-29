@@ -110,11 +110,25 @@ graph TB
 | Layer | Technology | Purpose | Version |
 |-------|------------|---------|---------|
 | **Frontend** | Tauri + egui | Cross-platform desktop UI | 2.0 + 0.29 |
-| **Backend** | Rust | High-performance core engine | 1.75+ |
+| **Backend** | Rust (Workspace) | Modular crate architecture | 1.75+ |
 | **AI/ML** | Ollama + Qwen2.5 | Local AI inference | Latest |
 | **Simulation** | NgSpice | Industry-standard SPICE | 42+ |
 | **Database** | SQLite + Vector DB | Component storage | 3.45+ |
 | **Build** | Cargo + Tauri CLI | Build system | Latest |
+
+### 📦 **Crate Architecture**
+
+OpenCircuit is organized as a Rust workspace with specialized crates:
+
+| Crate | Purpose | Status |
+|-------|---------|--------|
+| `opencircuit-core` | Core types and utilities | ✅ Active |
+| `opencircuit-ai` | AI integration with Ollama | ✅ Active |
+| `opencircuit-gui` | User interface components | ✅ Active |
+| `opencircuit-circuit` | Circuit design and simulation | 🔄 Development |
+| `opencircuit-pcb` | PCB layout and routing | 🔄 Development |
+| `opencircuit-database` | Data persistence layer | ✅ Active |
+| `opencircuit-utils` | Shared utilities | ✅ Active |
 
 ---
 
@@ -353,8 +367,17 @@ We welcome contributions from the community! OpenCircuit is built by engineers, 
 # Install development dependencies
 cargo install cargo-watch cargo-audit cargo-outdated
 
-# Run tests
+# Build all crates
+cargo build
+
+# Run all tests (unit + integration)
 cargo test
+
+# Run tests for specific crate
+cargo test --package opencircuit-ai
+
+# Run integration tests with output
+cargo test --package opencircuit-ai -- --nocapture
 
 # Run with hot reload
 cargo watch -x run
@@ -362,6 +385,9 @@ cargo watch -x run
 # Check code quality
 cargo clippy
 cargo fmt
+
+# Audit dependencies for security issues
+cargo audit
 ```
 
 ---
