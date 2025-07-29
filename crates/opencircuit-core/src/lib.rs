@@ -1,7 +1,14 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::fs;
 use std::fmt;
+use std::path::{Path, PathBuf};
 use uuid::Uuid;
+
+pub mod models;
+
+pub use models::*;
 
 /// Core error types for the OpenCircuit application
 #[derive(thiserror::Error, Debug)]

@@ -2949,12 +2949,15 @@ name = "opencircuit-database"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "dirs 5.0.1",
  "opencircuit-core",
  "opencircuit-utils",
+ "regex",
  "rstest",
  "rusqlite",
  "serde",
+ "serde_json",
  "thiserror 1.0.69",
  "tracing",
  "uuid",

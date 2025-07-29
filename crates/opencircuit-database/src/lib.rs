@@ -3,7 +3,12 @@ use rusqlite::{Connection, params};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 
+pub mod components;
+pub mod search;
 pub mod schema;
+
+pub use components::ComponentDatabase;
+pub use search::ComponentSearchEngine;
 
 /// Component record structure for database storage
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -39,6 +44,15 @@ impl Database {
     /// Create a new database connection and initialize schema
     pub fn new() -> Result<Self> {
         let conn = schema::initialize_database()?;
+        Ok(Database {
+            connection: Arc::new(Mutex::new(conn)),
+        })
+    }
+
+    /// Create a new in-memory database for testing
+    pub fn new_in_memory() -> Result<Self> {
+        let conn = rusqlite::Connection::open_in_memory()?;
+        schema::run_migrations(&conn)?;
         Ok(Database {
             connection: Arc::new(Mutex::new(conn)),
         })
