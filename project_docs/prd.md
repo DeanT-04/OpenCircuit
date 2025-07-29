@@ -68,10 +68,17 @@ OpenCircuit revolutionizes electronics design by democratizing professional-grad
 
 ## 🤖 AI Integration Architecture
 
-### LLM Integration
-- **Primary**: OpenAI GPT-4 for conversational interface
-- **Secondary**: Anthropic Claude for technical analysis
-- **Local**: Candle framework for offline capabilities
+### Local AI with Ollama
+- **Primary AI Engine**: Ollama with local models (Qwen 2.5, Gemma 2)
+- **Model Strategy**: Start with ultra-lightweight models for testing
+  - `qwen2.5:0.5b` (400MB) - Initial testing and quick responses
+  - `qwen2.5:1b` (800MB) - Balanced performance for production
+  - `qwen2.5:3b` (2GB) - Advanced analysis when needed
+- **Local Processing**: Complete privacy, no data leaves user's machine
+- **Offline Capability**: Full functionality without internet connection
+- **Rust Integration**: `ollama-rs` crate for seamless integration
+- **Streaming Responses**: Real-time AI feedback during circuit design
+- **Model Management**: Automatic downloading and caching of required models
 
 ### AI Capabilities
 1. **Natural Language Processing** - Convert user requirements to technical specs
@@ -86,7 +93,7 @@ OpenCircuit revolutionizes electronics design by democratizing professional-grad
 - **Language**: Rust (memory-safe, high-performance)
 - **GUI Framework**: Tauri + egui (cross-platform desktop)
 - **Simulation**: NgSpice bindings
-- **AI/ML**: Candle framework + external APIs
+- **AI/ML**: Candle framework + Ollama integration
 - **Database**: Embedded vector database for components
 
 ### Key Dependencies
@@ -100,6 +107,7 @@ serde = "1.0"
 reqwest = "0.12"
 sqlx = "0.8"
 ngspice-sys = "0.1"
+ollama-rs = "0.1"
 ```
 
 ## 📊 Data Sources & Integrations

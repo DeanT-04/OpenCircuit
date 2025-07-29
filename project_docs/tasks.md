@@ -67,30 +67,30 @@
 ## 📋 Phase 2: MVP Chat & Component Lookup (Priority: HIGH)
 
 ### ✅ Task: Implement Basic Chat Interface
-- **Status**: ⬜ Not Started
+- **Status**: ✅ Done
 - **Output File(s)**: `src/gui/chat_panel.rs`, `src/ai/chat_handler.rs`
 - **Description**: Build the chat UI with message history, input field, and basic message rendering.
 - **Docs to Reference**:
   - [AI Overview](../docs/ai/overview.md)
   - [egui Framework](../docs/gui/egui.md)
 - **Must-Do After Task Completion**:
-  - [ ] Test message input and display
-  - [ ] Verify chat history persistence
-  - [ ] Create milestone file `milestones/implement_basic_chat.md`
-  - [ ] Test keyboard shortcuts and accessibility
+  - [x] Test message input and display
+  - [x] Verify chat history persistence
+  - [x] Create milestone file `milestones/implement_basic_chat.md`
+  - [x] Test keyboard shortcuts and accessibility
 
-### ✅ Task: Integrate OpenAI API Client
+### ✅ Task: Setup Ollama Integration
 - **Status**: ⬜ Not Started
-- **Output File(s)**: `src/ai/openai_client.rs`, `src/ai/models.rs`
-- **Description**: Create OpenAI API client with proper error handling, rate limiting, and response parsing.
+- **Output File(s)**: `src/ai/ollama_client.rs`, `src/ai/models.rs`, `src/ai/ollama_manager.rs`
+- **Description**: Setup local Ollama server and integrate ollama-rs client with model management and ultra-lightweight model testing.
 - **Docs to Reference**:
   - [AI Integration](../docs/ai/integration.md)
-  - [Networking & APIs](../docs/networking/overview.md)
+  - [Local AI Models](../docs/ai/local_models.md)
 - **Must-Do After Task Completion**:
-  - [ ] Test API connectivity and authentication
-  - [ ] Verify error handling for network issues
-  - [ ] Create milestone file `milestones/integrate_openai_api.md`
-  - [ ] Test rate limiting and retry logic
+  - [ ] Test Ollama server installation and startup
+  - [ ] Verify model downloading and management
+  - [ ] Create milestone file `milestones/setup_ollama_integration.md`
+  - [ ] Test with qwen2.5:0.5b model for basic functionality
 
 ### ✅ Task: Build Component Database Integration
 - **Status**: ⬜ Not Started

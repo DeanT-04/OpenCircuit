@@ -1,10 +1,12 @@
 //! AI integration module for OpenCircuit
 //! 
-//! This module will contain:
-//! - OpenAI API client
+//! This module contains:
+//! - Chat handler for AI conversations
+//! - OpenAI API client (to be implemented in next task)
 //! - Component recommendation system
-//! - Chat interface backend
 //! - Vector embeddings for component search
+
+pub mod chat_handler;
 
 use crate::OpenCircuitResult;
 
@@ -41,6 +43,9 @@ impl AiService {
         Ok("AI integration will be implemented in Phase 2".to_string())
     }
 }
+
+// Re-export chat handler for easy access
+pub use chat_handler::ChatHandler;
 
 #[cfg(test)]
 mod tests {

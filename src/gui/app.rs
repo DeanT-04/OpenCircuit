@@ -1,253 +1,170 @@
-//! Console-based interface for OpenCircuit
+//! Console-based application interface for OpenCircuit
 //! 
-//! This module implements a temporary console interface while egui dependencies are resolved.
-//! Features:
-//! - Interactive chat simulation
-//! - Circuit view placeholder
+//! This module provides a text-based interface for interacting with OpenCircuit
+//! features including:
+//! - AI chat assistant for circuit design help
+//! - Circuit visualization (placeholder)
 //! - Research console with status tracking
 
-use crate::gui::{AppState, ChatMessage, ResearchStatus};
-use crate::OpenCircuitResult;
 use std::io::{self, Write};
-use std::thread;
-use std::time::Duration;
+use crate::ai::ChatHandler;
+use crate::gui::{AppState, ChatMessage};
+use chrono::Utc;
 
-/// Main OpenCircuit console application
-pub struct OpenCircuitApp {
-    pub state: AppState,
+pub struct ConsoleApp {
+    state: AppState,
+    chat_handler: ChatHandler,
 }
 
-impl OpenCircuitApp {
+impl ConsoleApp {
     pub fn new() -> Self {
         Self {
             state: AppState::default(),
+            chat_handler: ChatHandler::new(),
         }
     }
 
-    /// Add a chat message to the conversation
-    pub fn add_chat_message(&mut self, content: String, is_user: bool) {
-        let message = ChatMessage {
-            id: uuid::Uuid::new_v4().to_string(),
-            content,
-            is_user,
-            timestamp: chrono::Utc::now(),
-        };
-        self.state.chat_messages.push(message);
-    }
+    pub async fn run(&mut self) -> crate::OpenCircuitResult<()> {
+        println!("🔌 Welcome to OpenCircuit - AI-Powered Circuit Design Tool");
+        println!("Type 'help' for commands, 'quit' to exit\n");
 
-    /// Run the console application
-    pub fn run() -> OpenCircuitResult<()> {
-        println!("🔌 OpenCircuit - Console Interface");
-        println!("===================================");
-        println!("Welcome to OpenCircuit! This is a temporary console interface.");
-        println!("The full egui GUI will be available once dependency issues are resolved.");
-        println!();
-        
-        let mut app = Self::new();
-        app.run_console_loop()?;
-        
-        Ok(())
-    }
-
-    fn run_console_loop(&mut self) -> OpenCircuitResult<()> {
         loop {
-            self.display_status();
             self.display_menu();
             
-            print!("Enter your choice: ");
+            print!("\nSelect option: ");
             io::stdout().flush()?;
             
             let mut input = String::new();
             io::stdin().read_line(&mut input)?;
-            
-            match input.trim() {
-                "1" => self.handle_chat()?,
-                "2" => self.handle_circuit_view()?,
-                "3" => self.handle_research_console()?,
-                "4" => {
-                    println!("Goodbye!");
+            let choice = input.trim();
+
+            match choice {
+                "1" => self.chat_interface().await?,
+                "2" => self.circuit_view(),
+                "3" => self.research_console(),
+                "help" => self.show_help(),
+                "quit" | "exit" | "q" => {
+                    println!("Goodbye! 👋");
                     break;
                 }
-                _ => println!("Invalid choice. Please try again."),
+                _ => println!("Invalid option. Type 'help' for available commands."),
             }
-            
-            println!();
         }
-        
-        Ok(())
-    }
 
-    fn display_status(&self) {
-        println!("📊 Current Status:");
-        println!("  💬 Chat Messages: {}", self.state.chat_messages.len());
-        println!("  🔌 Current Circuit: {}", 
-            if self.state.current_circuit.is_some() { "Loaded" } else { "None" });
-        println!("  🔍 Research Status: {:?}", self.state.research_status);
-        println!();
+        Ok(())
     }
 
     fn display_menu(&self) {
-        println!("🎛️  Main Menu:");
-        println!("  1. 💬 Chat Interface");
-        println!("  2. 🔌 Circuit View");
-        println!("  3. 🔍 Research Console");
-        println!("  4. 🚪 Exit");
-        println!();
+        println!("\n═══════════════════════════════════════");
+        println!("🔌 OpenCircuit Main Menu");
+        println!("═══════════════════════════════════════");
+        println!("1. 💬 AI Chat Assistant");
+        println!("2. 🔧 Circuit View (Coming Soon)");
+        println!("3. 🔍 Research Console (Coming Soon)");
+        println!("═══════════════════════════════════════");
+        println!("Commands: help, quit");
     }
 
-    fn handle_chat(&mut self) -> OpenCircuitResult<()> {
-        println!("💬 Chat Interface");
-        println!("================");
-        
-        // Display recent messages
-        if self.state.chat_messages.is_empty() {
-            println!("No messages yet. Start a conversation!");
-        } else {
-            println!("Recent messages:");
-            for (i, msg) in self.state.chat_messages.iter().enumerate().rev().take(5) {
-                let sender = if msg.is_user { "You" } else { "AI" };
-                println!("  [{}] {}: {}", i + 1, sender, msg.content);
+    async fn chat_interface(&mut self) -> crate::OpenCircuitResult<()> {
+        println!("\n💬 AI Chat Assistant - Circuit Design Expert");
+        println!("Type 'back' to return to main menu, 'clear' to clear history\n");
+
+        // Display chat history
+        if !self.state.chat_messages.is_empty() {
+            println!("📜 Chat History:");
+            for message in &self.state.chat_messages {
+                self.display_message(message);
             }
-        }
-        
-        print!("\nEnter your message (or 'back' to return): ");
-        io::stdout().flush()?;
-        
-        let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
-        let input = input.trim();
-        
-        if input != "back" && !input.is_empty() {
-            self.add_chat_message(input.to_string(), true);
-            
-            // Simulate AI response
-            thread::sleep(Duration::from_millis(500));
-            let ai_response = format!("I understand you said: '{}'. This is a placeholder response from the OpenCircuit AI assistant. In the full implementation, I would help you design circuits, suggest components, and provide technical guidance.", input);
-            self.add_chat_message(ai_response, false);
-            
-            println!("✅ Message sent and AI responded!");
-        }
-        
-        Ok(())
-    }
-
-    fn handle_circuit_view(&self) -> OpenCircuitResult<()> {
-        println!("🔌 Circuit View");
-        println!("==============");
-        
-        if let Some(_circuit) = &self.state.current_circuit {
-            println!("📋 Circuit loaded and ready for visualization.");
-            println!("🎨 In the full GUI, this will show:");
-            println!("   • Interactive circuit diagram");
-            println!("   • Component placement grid");
-            println!("   • Real-time simulation results");
-            println!("   • Zoom and pan controls");
-        } else {
-            println!("❌ No circuit currently loaded.");
-            println!("💡 Use the chat interface to describe a circuit you'd like to create.");
             println!();
-            println!("📐 Circuit Canvas Preview:");
-            println!("   ┌─────────────────────────────────────┐");
-            println!("   │                                     │");
-            println!("   │     ┌─────┐                        │");
-            println!("   │ ────┤ R1  ├────                    │");
-            println!("   │     │1kΩ  │                        │");
-            println!("   │     └─────┘                        │");
-            println!("   │                                     │");
-            println!("   │   [Placeholder Circuit Element]     │");
-            println!("   │                                     │");
-            println!("   └─────────────────────────────────────┘");
         }
-        
-        println!("\nPress Enter to continue...");
-        let mut _input = String::new();
-        io::stdin().read_line(&mut _input)?;
-        
-        Ok(())
-    }
 
-    fn handle_research_console(&mut self) -> OpenCircuitResult<()> {
-        println!("🔍 Research Console");
-        println!("==================");
-        
-        match self.state.research_status {
-            ResearchStatus::Idle => {
-                println!("🟢 Research system is idle and ready.");
-                print!("Start a research task? (y/n): ");
-                io::stdout().flush()?;
-                
-                let mut input = String::new();
-                io::stdin().read_line(&mut input)?;
-                
-                if input.trim().to_lowercase() == "y" {
-                    self.state.research_status = ResearchStatus::Searching;
-                    println!("🔄 Starting research...");
-                    
-                    // Simulate research process
-                    for i in 1..=3 {
-                        thread::sleep(Duration::from_millis(800));
-                        println!("   📚 Searching databases... Step {}/3", i);
-                    }
-                    
-                    self.state.research_status = ResearchStatus::Analyzing;
-                    println!("🧮 Analyzing results...");
-                    
-                    for i in 1..=2 {
-                        thread::sleep(Duration::from_millis(600));
-                        println!("   🔬 Analysis phase {}/2", i);
-                    }
-                    
-                    self.state.research_status = ResearchStatus::Complete;
-                    println!("✅ Research complete! Results would be displayed in the full GUI.");
+        loop {
+            print!("You: ");
+            io::stdout().flush()?;
+            
+            let mut input = String::new();
+            io::stdin().read_line(&mut input)?;
+            let user_input = input.trim();
+
+            match user_input {
+                "back" => break,
+                "clear" => {
+                    self.state.chat_messages.clear();
+                    self.chat_handler = ChatHandler::new(); // Reset chat handler
+                    println!("Chat history cleared! 🧹");
+                    continue;
                 }
-            }
-            ResearchStatus::Searching => {
-                println!("🔄 Research is currently in progress...");
-                println!("   📊 Progress: Analyzing component databases");
-                println!("   🕒 Estimated time remaining: 2-3 seconds");
-            }
-            ResearchStatus::Analyzing => {
-                println!("🧮 Analysis in progress...");
-                println!("   📊 Processing component specifications");
-                println!("   🎯 Generating recommendations");
-            }
-            ResearchStatus::Complete => {
-                println!("✅ Research completed successfully!");
-                println!("📋 Results summary:");
-                println!("   • Found 15 relevant components");
-                println!("   • 3 circuit design patterns identified");
-                println!("   • 2 optimization suggestions available");
-                println!("   • Estimated cost: $12.50");
-                println!("   • Power consumption: 150mW");
-                
-                print!("Reset research status? (y/n): ");
-                io::stdout().flush()?;
-                
-                let mut input = String::new();
-                io::stdin().read_line(&mut input)?;
-                
-                if input.trim().to_lowercase() == "y" {
-                    self.state.research_status = ResearchStatus::Idle;
-                    println!("🔄 Research status reset to idle.");
+                "" => continue,
+                _ => {
+                    // Add user message
+                    let user_message = ChatMessage {
+                        id: uuid::Uuid::new_v4().to_string(),
+                        content: user_input.to_string(),
+                        is_user: true,
+                        timestamp: Utc::now(),
+                    };
+                    self.state.chat_messages.push(user_message.clone());
+
+                    // Get AI response
+                    print!("🤖 AI: ");
+                    io::stdout().flush()?;
+                    
+                    match self.chat_handler.process_message(user_input).await {
+                        Ok(ai_message) => {
+                            println!("{}", ai_message.content);
+                            
+                            // Add AI response to history (it's already added by the handler)
+                            self.state.chat_messages.push(ai_message);
+                        }
+                        Err(e) => {
+                            println!("Sorry, I encountered an error: {}", e);
+                        }
+                    }
                 }
             }
         }
-        
-        println!("\nPress Enter to continue...");
-        let mut _input = String::new();
-        io::stdin().read_line(&mut _input)?;
-        
+
         Ok(())
     }
-}
 
-impl Default for OpenCircuitApp {
-    fn default() -> Self {
-        Self::new()
+    fn display_message(&self, message: &ChatMessage) {
+        let time = message.timestamp.format("%H:%M:%S");
+        let prefix = if message.is_user { "You" } else { "🤖 AI" };
+        println!("[{}] {}: {}", time, prefix, message.content);
+    }
+
+    fn circuit_view(&self) {
+        println!("\n🔧 Circuit View");
+        println!("This feature will be implemented in Phase 3: Circuit Generation & Simulation");
+        println!("Coming soon: Visual circuit editor, component library, and simulation tools");
+    }
+
+    fn research_console(&self) {
+        println!("\n🔍 Research Console");
+        println!("This feature will be implemented in Phase 6: Advanced AI Features");
+        println!("Coming soon: Component research, datasheet analysis, and design recommendations");
+    }
+
+    fn show_help(&self) {
+        println!("\n📖 OpenCircuit Help");
+        println!("═══════════════════════════════════════");
+        println!("Available Commands:");
+        println!("  1 or chat    - Open AI chat assistant");
+        println!("  2 or circuit - View circuit editor (coming soon)");
+        println!("  3 or research - Open research console (coming soon)");
+        println!("  help         - Show this help message");
+        println!("  quit/exit/q  - Exit the application");
+        println!("\nIn Chat Mode:");
+        println!("  back         - Return to main menu");
+        println!("  clear        - Clear chat history");
+        println!("═══════════════════════════════════════");
     }
 }
 
-/// Run the console application
-pub fn run_app() -> OpenCircuitResult<()> {
-    OpenCircuitApp::run()
+pub fn run_app() -> crate::OpenCircuitResult<()> {
+    let rt = tokio::runtime::Runtime::new()?;
+    rt.block_on(async {
+        let mut app = ConsoleApp::new();
+        app.run().await
+    })
 }

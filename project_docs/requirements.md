@@ -85,7 +85,7 @@
 ├─────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
 │  │ AI Engine   │  │Circuit Sim  │  │PCB Engine   │     │
-│  │ (Candle)    │  │ (NgSpice)   │  │ (Custom)    │     │
+│  │ (Ollama)    │  │ (NgSpice)   │  │ (Custom)    │     │
 │  └─────────────┘  └─────────────┘  └─────────────┘     │
 ├─────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
@@ -103,9 +103,9 @@
 - **Rust 1.75+**: Systems programming language
 
 #### AI/ML Integration
-- **Candle 0.8**: Local ML inference framework
-- **OpenAI API**: GPT-4 for conversational interface
-- **Anthropic API**: Claude for technical analysis
+- **Ollama Server**: Local LLM inference with automatic setup
+- **Qwen2.5 Models**: Ultra-lightweight (0.5b), Balanced (1b), Advanced (3b)
+- **Streaming Interface**: Real-time response generation
 - **Vector Database**: Component knowledge storage
 
 #### Circuit Simulation

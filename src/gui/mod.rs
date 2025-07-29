@@ -2,11 +2,14 @@
 //! 
 //! This module contains:
 //! - egui-based three-panel layout
-//! - Chat interface
+//! - Chat interface with AI assistant
 //! - Circuit visualization
 //! - Research console animation
 
 pub mod app;
+// Temporarily commented out due to egui dependency issues
+// pub mod chat_panel;
+// pub mod egui_app;  // Temporarily disabled due to dependency issues
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -56,6 +59,8 @@ impl OpenCircuitApp {
     }
 
     pub fn run() -> crate::OpenCircuitResult<()> {
+        // Temporarily using console interface due to egui dependency issues
+        // Will switch to egui once edition2024 dependency issue is resolved
         app::run_app()
     }
 
@@ -75,6 +80,11 @@ impl Default for OpenCircuitApp {
         Self::new()
     }
 }
+
+// Re-export for easy access
+// Temporarily commented out due to egui dependency issues
+// pub use chat_panel::ChatPanel;
+// pub use egui_app::run_egui_app;  // Temporarily disabled
 
 #[cfg(test)]
 mod tests {

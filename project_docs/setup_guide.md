@@ -130,8 +130,8 @@ New-Item -ItemType Directory -Force -Path "tests\fixtures"
 @"
 # OpenCircuit Development Configuration
 RUST_LOG=debug
-OPENAI_API_KEY=your_openai_api_key_here
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+OLLAMA_HOST=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:0.5b
 DATABASE_URL=sqlite:data/opencircuit.db
 "@ | Out-File -FilePath ".env" -Encoding UTF8
 
@@ -153,6 +153,9 @@ Cargo.lock
 *.db
 *.sqlite
 
+# Ollama Models (optional - can be cached)
+.ollama/
+
 # Logs
 *.log
 
@@ -166,19 +169,47 @@ Thumbs.db
 "@ | Out-File -FilePath ".gitignore" -Encoding UTF8
 ```
 
-## 🔑 Step 6: API Keys Setup
+## 🦙 Step 6: Ollama AI Setup
 
-### Configure Environment Variables
+### Install Ollama
 ```powershell
-# Create secure API key storage
-$envFile = ".env"
-Write-Host "Please add your API keys to the .env file:"
-Write-Host "1. OpenAI API Key: https://platform.openai.com/api-keys"
-Write-Host "2. Anthropic API Key: https://console.anthropic.com/"
-Write-Host "3. Component API Keys (Octopart, DigiKey, etc.)"
+# Download and install Ollama
+Invoke-WebRequest -Uri "https://ollama.ai/download/windows" -OutFile "ollama-installer.exe"
+Start-Process -FilePath "ollama-installer.exe" -Wait
 
-# Open .env file for editing
-code .env
+# Refresh environment variables
+refreshenv
+
+# Verify Ollama installation
+ollama --version
+```
+
+### Configure Ollama Service
+```powershell
+# Start Ollama service
+ollama serve
+
+# In a new PowerShell window, pull the ultra-lightweight model for testing
+ollama pull qwen2.5:0.5b
+
+# Verify model installation
+ollama list
+
+# Test basic functionality
+ollama run qwen2.5:0.5b "Hello, can you help with circuit design?"
+```
+
+### Configure Ollama for OpenCircuit
+```powershell
+# Create Ollama configuration directory
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.ollama"
+
+# Set environment variables for Ollama
+[Environment]::SetEnvironmentVariable("OLLAMA_HOST", "http://localhost:11434", "User")
+[Environment]::SetEnvironmentVariable("OLLAMA_MODELS", "$env:USERPROFILE\.ollama\models", "User")
+
+Write-Host "Ollama setup complete! Available models:"
+ollama list
 ```
 
 ## 🗄️ Step 7: Database Setup

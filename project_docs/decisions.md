@@ -62,25 +62,38 @@
 - ❌ C library integration complexity
 - ❌ Platform-specific build requirements
 
-### AD-004: Hybrid AI Architecture (Local + Cloud)
+### AD-004: Local-First AI Architecture with Ollama
 **Date**: 2025-01-27  
 **Status**: Accepted  
-**Context**: Balance between performance, privacy, and capability
+**Context**: Need to integrate AI capabilities for circuit design assistance while maintaining privacy, performance, and cost-effectiveness
 
-**Decision**: Implement hybrid AI with local Candle models and cloud LLM APIs
+**Decision**: Implement local-first AI architecture using Ollama with ultra-lightweight models for primary AI functionality
 
 **Rationale**:
-- Local models for privacy-sensitive operations
-- Cloud APIs for advanced conversational AI
-- Graceful degradation when offline
-- Cost optimization for different use cases
-- Future-proofing for model improvements
+- **Privacy**: All AI processing happens locally, no data sent to external services
+- **Cost**: No API costs, unlimited usage
+- **Performance**: Low latency for real-time interactions
+- **Reliability**: No dependency on internet connectivity
+- **Control**: Full control over model selection and updates
+- **Testing Strategy**: Start with ultra-lightweight models (qwen2.5:0.5b) for validation
+
+**Implementation**:
+- Primary AI Engine: Ollama server (local)
+- Ultra-lightweight Model: Qwen2.5:0.5b (500MB) for initial testing
+- Balanced Model: Qwen2.5:1b (1GB) for production
+- Advanced Model: Qwen2.5:3b (3GB) for complex tasks
+- Rust Integration: `ollama-rs` crate
+- Streaming: Real-time response streaming
+- Model Management: Automatic downloading and switching
 
 **Consequences**:
-- ✅ Privacy and offline capability
-- ✅ Access to state-of-the-art models
-- ❌ Increased complexity
-- ❌ API cost considerations
+- ✅ Complete privacy and data control
+- ✅ No ongoing API costs
+- ✅ Offline functionality
+- ✅ Predictable performance
+- ⚠️ Initial setup complexity (Ollama installation)
+- ⚠️ Local storage requirements for models
+- ⚠️ Model capabilities limited compared to cloud LLMs
 
 ## 🗄️ Data Architecture Decisions
 
