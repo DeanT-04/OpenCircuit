@@ -36,6 +36,7 @@ impl Default for OllamaConfig {
 }
 
 /// OpenCircuit-specific Ollama client
+#[derive(Clone)]
 pub struct OpenCircuitOllamaClient {
     /// Ollama client instance
     client: Ollama,

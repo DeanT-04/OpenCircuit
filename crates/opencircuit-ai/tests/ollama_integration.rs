@@ -3,7 +3,7 @@
 //! This file contains integration tests for the Ollama client and manager.
 //! Run with: cargo test --test ollama_integration
 
-use opencircuit_ai::{AiService, AiConfig, models::{AiUseCase, AiModel}, ollama_client::OpenCircuitOllamaClient, ollama_manager::OllamaManager};
+use opencircuit_ai::{AiService, models::{AiUseCase, AiModel}, ollama_client::OpenCircuitOllamaClient, ollama_manager::OllamaManager};
 
 #[tokio::test]
 async fn test_ollama_server_connection() {
@@ -89,14 +89,31 @@ async fn test_component_suggestion() {
     match service.initialize().await {
         Ok(_) => {
             if service.is_ready() {
-                let response = service.suggest_components(
-                    "I need a low-noise amplifier for audio applications, operating at 5V with gain of 20dB"
-                ).await;
+                use opencircuit_ai::component_advisor::RecommendationRequest;
+                
+                let request = RecommendationRequest {
+                    requirements: "I need a low-noise amplifier for audio applications, operating at 5V with gain of 20dB".to_string(),
+                    circuit_context: None,
+                    preferred_categories: vec![],
+                    budget_constraints: None,
+                    performance_priorities: vec![],
+                    max_recommendations: 5,
+                };
+                
+                let response = service.suggest_components(request).await;
                 
                 match response {
-                    Ok(ai_response) => {
-                        println!("✅ Component suggestion received:");
-                        println!("Response: {}", ai_response.content);
+                    Ok(recommendations) => {
+                        println!("✅ Component suggestions received:");
+                        println!("Found {} recommendations", recommendations.len());
+                        for (i, rec) in recommendations.iter().enumerate() {
+                            println!("{}. {} - {} (confidence: {:.2})", 
+                                i + 1, 
+                                rec.component.manufacturer, 
+                                rec.component.part_number,
+                                rec.confidence
+                            );
+                        }
                     }
                     Err(e) => println!("❌ Component suggestion failed: {}", e),
                 }

@@ -339,14 +339,14 @@ mod tests {
 
     #[test]
     fn test_ollama_manager_creation() {
-        let manager = OllamaManager::new();
-        assert_eq!(manager.status.server_status, ServerStatus::Unknown);
-        assert!(manager.performance_tracker.is_empty());
+        let _manager = OllamaManager::new();
+        assert_eq!(_manager.status.server_status, ServerStatus::Unknown);
+        assert!(_manager.performance_tracker.is_empty());
     }
 
     #[test]
     fn test_model_suitability_selection() {
-        let manager = OllamaManager::new();
+        let _manager = OllamaManager::new();
         
         // Test that we can identify suitable models for different use cases
         let basic_chat = AiUseCase::BasicChat;

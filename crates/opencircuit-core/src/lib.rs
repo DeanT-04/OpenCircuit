@@ -7,8 +7,10 @@ use std::path::{Path, PathBuf};
 use uuid::Uuid;
 
 pub mod models;
+pub mod apis;
 
 pub use models::*;
+pub use apis::*;
 
 /// Core error types for the OpenCircuit application
 #[derive(thiserror::Error, Debug)]
