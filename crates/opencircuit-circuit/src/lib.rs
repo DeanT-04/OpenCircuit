@@ -15,7 +15,7 @@ pub struct Component {
     pub position: (f64, f64),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ComponentType {
     Resistor,
     Capacitor,

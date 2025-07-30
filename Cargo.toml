@@ -12,12 +12,13 @@ categories = ["science", "simulation", "gui"]
 [dependencies]
 # OpenCircuit Crates
 opencircuit-core = { path = "crates/opencircuit-core" }
-opencircuit-ai = { path = "crates/opencircuit-ai" }
-opencircuit-circuit = { path = "crates/opencircuit-circuit" }
-opencircuit-pcb = { path = "crates/opencircuit-pcb" }
 opencircuit-gui = { path = "crates/opencircuit-gui" }
 opencircuit-database = { path = "crates/opencircuit-database" }
+opencircuit-circuit = { path = "crates/opencircuit-circuit" }
+opencircuit-ai = { path = "crates/opencircuit-ai" }
+opencircuit-pcb = { path = "crates/opencircuit-pcb" }
 opencircuit-utils = { path = "crates/opencircuit-utils" }
+opencircuit-simulation = { path = "crates/opencircuit-simulation" }
 
 # Core Framework
 tauri = { version = "2.7.0", features = ["macos-private-api"], optional = true }
@@ -50,6 +51,7 @@ members = [
     "crates/opencircuit-gui",
     "crates/opencircuit-database",
     "crates/opencircuit-utils",
+    "crates/opencircuit-simulation",
 ]
 
 # Build configuration
