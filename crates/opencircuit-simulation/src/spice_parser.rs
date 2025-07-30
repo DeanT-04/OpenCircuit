@@ -52,6 +52,9 @@ impl SpiceParser {
     fn component_to_spice(&mut self, component: &Component) -> Result<String> {
         let component_id = self.get_component_id(&component.component_type);
         
+        // Generate node assignments based on component type
+        let (node1, node2, node3, node4, node5) = self.generate_node_assignments(&component.component_type);
+        
         match &component.component_type {
             ComponentType::Resistor => {
                 let value = component.value.as_ref()
@@ -61,10 +64,7 @@ impl SpiceParser {
                     })?;
                 
                 Ok(format!("R{} {} {} {}", 
-                    component_id,
-                    "1", // Default node 1
-                    "0", // Default node 0 (ground)
-                    value
+                    component_id, node1, node2, value
                 ))
             },
             
@@ -76,10 +76,7 @@ impl SpiceParser {
                     })?;
                 
                 Ok(format!("C{} {} {} {}", 
-                    component_id,
-                    "1", // Default node 1
-                    "0", // Default node 0 (ground)
-                    value
+                    component_id, node1, node2, value
                 ))
             },
             
@@ -91,10 +88,7 @@ impl SpiceParser {
                     })?;
                 
                 Ok(format!("L{} {} {} {}", 
-                    component_id,
-                    "1", // Default node 1
-                    "0", // Default node 0 (ground)
-                    value
+                    component_id, node1, node2, value
                 ))
             },
             
@@ -106,10 +100,7 @@ impl SpiceParser {
                     })?;
                 
                 Ok(format!("V{} {} {} DC {}", 
-                    component_id,
-                    "1", // Default positive node
-                    "0", // Default negative node (ground)
-                    value
+                    component_id, node1, node2, value
                 ))
             },
             
@@ -121,39 +112,42 @@ impl SpiceParser {
                     })?;
                 
                 Ok(format!("I{} {} {} DC {}", 
-                    component_id,
-                    "1", // Default positive node
-                    "0", // Default negative node (ground)
-                    value
+                    component_id, node1, node2, value
                 ))
             },
             
             ComponentType::Diode => {
                 Ok(format!("D{} {} {} D1N4148", 
-                    component_id,
-                    "1", // Default anode
-                    "0", // Default cathode (ground)
+                    component_id, node1, node2
                 ))
             },
             
             ComponentType::Transistor => {
                 Ok(format!("Q{} {} {} {} 2N2222", 
-                    component_id,
-                    "1", // Collector
-                    "2", // Base
-                    "0", // Emitter (ground)
+                    component_id, node1, node2, node3
                 ))
             },
             
             ComponentType::OpAmp => {
                 Ok(format!("X{} {} {} {} {} {} LM741", 
-                    component_id,
-                    "1", // Non-inverting input
-                    "2", // Inverting input
-                    "3", // Output
-                    "4", // V+
-                    "0", // V- (ground)
+                    component_id, node1, node2, node3, node4, node5
                 ))
+            },
+        }
+    }
+    
+    /// Generate node assignments for different component types
+    fn generate_node_assignments(&self, component_type: &ComponentType) -> (String, String, String, String, String) {
+        match component_type {
+            ComponentType::Resistor | ComponentType::Capacitor | ComponentType::Inductor | 
+            ComponentType::VoltageSource | ComponentType::CurrentSource | ComponentType::Diode => {
+                ("1".to_string(), "0".to_string(), "2".to_string(), "3".to_string(), "4".to_string())
+            },
+            ComponentType::Transistor => {
+                ("1".to_string(), "2".to_string(), "0".to_string(), "3".to_string(), "4".to_string())
+            },
+            ComponentType::OpAmp => {
+                ("1".to_string(), "2".to_string(), "3".to_string(), "4".to_string(), "0".to_string())
             },
         }
     }

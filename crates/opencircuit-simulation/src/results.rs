@@ -174,6 +174,16 @@ impl SimulationResults {
         }
     }
     
+    /// Create new simulation results with default DC analysis
+    pub fn default_dc() -> Self {
+        Self {
+            analysis_type: AnalysisType::DC,
+            data: AnalysisData::Raw(Vec::new()),
+            metadata: HashMap::new(),
+            warnings: Vec::new(),
+        }
+    }
+    
     /// Add metadata
     pub fn add_metadata(&mut self, key: String, value: String) {
         self.metadata.insert(key, value);
@@ -182,6 +192,22 @@ impl SimulationResults {
     /// Add warning
     pub fn add_warning(&mut self, warning: String) {
         self.warnings.push(warning);
+    }
+    
+    /// Add warnings from a vector
+    pub fn add_warnings(&mut self, warnings: Vec<String>) {
+        self.warnings.extend(warnings);
+    }
+    
+    /// Add raw output data
+    pub fn add_raw_output(&mut self, output: Vec<String>) {
+        self.data = AnalysisData::Raw(output);
+    }
+    
+    /// Add structured data
+    pub fn add_data(&mut self, key: String, values: HashMap<String, f64>) {
+        // This is a placeholder for more sophisticated data handling
+        self.metadata.insert(key, format!("{:?}", values));
     }
     
     /// Check if simulation was successful
@@ -198,7 +224,7 @@ impl SimulationResults {
         }
     }
     
-    /// Get summary statistics
+    /// Get summary of results
     pub fn summary(&self) -> String {
         match &self.data {
             AnalysisData::DC(dc) => {
