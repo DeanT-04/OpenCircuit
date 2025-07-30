@@ -1,0 +1,43 @@
+[package]
+name = "opencircuit-graphics"
+version = "0.1.0"
+edition = "2021"
+authors = ["OpenCircuit Contributors"]
+description = "Real-time circuit visualization and graphics for OpenCircuit"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/opencircuit/opencircuit"
+keywords = ["circuit", "graphics", "visualization", "simulation", "schematic"]
+categories = ["graphics", "science", "visualization"]
+
+[dependencies]
+# Core dependencies
+opencircuit-core = { path = "../opencircuit-core", version = "0.1.0" }
+opencircuit-circuit = { path = "../opencircuit-circuit", version = "0.1.0" }
+opencircuit-simulation = { path = "../opencircuit-simulation", version = "0.1.0" }
+
+# Graphics dependencies
+eframe = "0.26"
+egui = "0.26"
+
+# Utility dependencies
+thiserror = "1.0"
+tokio = { version = "1.0", features = ["sync", "time"] }
+serde = { version = "1.0", features = ["derive"] }
+
+# Optional dependencies for advanced features
+plotters = { version = "0.3", optional = true }
+wgpu = { version = "0.18", optional = true }
+
+[dev-dependencies]
+opencircuit-utils = { path = "../opencircuit-utils", version = "0.1.0" }
+
+[features]
+default = ["egui_backend"]
+egui_backend = []
+wgpu_backend = ["wgpu"]
+plotting = ["plotters"]
+full = ["wgpu_backend", "plotting"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
