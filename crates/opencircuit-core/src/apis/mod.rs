@@ -18,7 +18,6 @@ use lru::LruCache;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::hash::DefaultHasher;
 use std::num::{NonZeroU32, NonZeroUsize};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -317,7 +316,7 @@ impl ApiManager {
     }
 
     /// Search components across all enabled APIs
-    pub async fn search_components(&self, query: &str) -> Result<Vec<crate::Component>, ApiError> {
+    pub async fn search_components(&self, query: &str) -> Result<Vec<crate::models::Component>, ApiError> {
         let mut all_components = Vec::new();
 
         // Search Octopart
@@ -357,7 +356,7 @@ impl ApiManager {
     }
 
     /// Get component details by part number
-    pub async fn get_component_details(&self, part_number: &str) -> Result<Option<crate::Component>, ApiError> {
+    pub async fn get_component_details(&self, part_number: &str) -> Result<Option<crate::models::Component>, ApiError> {
         // Try each API in order of preference
         if let Some(ref client) = self.octopart {
             if let Ok(component) = client.get_component_details(part_number).await {

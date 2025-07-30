@@ -4,7 +4,7 @@
 //! from multiple suppliers and provides comprehensive component information.
 
 use super::{ApiError, BaseApiClient};
-use crate::{Component, ComponentCategory, SpecValue, PriceInfo, PriceBreak, AvailabilityInfo};
+use crate::models::{Component, ComponentCategory, SpecValue, PriceInfo, PriceBreak, AvailabilityInfo};
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};

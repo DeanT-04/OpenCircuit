@@ -13,6 +13,9 @@ pub mod models;
 pub mod ollama_manager;
 pub mod component_advisor;
 pub mod embeddings;
+pub mod circuit_generator;
+pub mod circuit_simulator;
+pub mod docs;
 
 use anyhow::Result;
 use tracing::{info, warn, error};

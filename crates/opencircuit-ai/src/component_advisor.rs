@@ -9,10 +9,10 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use opencircuit_core::{
-    models::{Component, ComponentCategory, SpecValue},
+    models::{Component, ComponentCategory},
     OpenCircuitError,
 };
-use crate::models::{AiModel, AiResponse, AiUseCase, AiContext, CircuitType, DesignPhase, ExpertiseLevel};
+use crate::models::{AiModel, AiContext};
 use crate::ollama_client::OpenCircuitOllamaClient;
 use crate::embeddings::{ComponentEmbeddingEngine, SimilarityMatch};
 

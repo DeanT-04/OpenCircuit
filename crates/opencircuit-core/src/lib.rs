@@ -1,4 +1,5 @@
 use anyhow::Result;
+use chrono;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -8,9 +9,13 @@ use uuid::Uuid;
 
 pub mod models;
 pub mod apis;
+pub mod circuit;
 
-pub use models::*;
-pub use apis::*;
+pub use models::{Component as DbComponent, ComponentCategory, ComponentId, SpecValue, PriceInfo, PriceBreak, AvailabilityInfo, ComponentSearchFilter, ComponentSearchResult};
+pub use apis::{ApiError, ApiKey, RateLimit, CachedResponse, ApiCache, BaseApiClient, OctopartClient, DigiKeyClient, MouserClient};
+pub use circuit::{Netlist, NetlistError, ComponentType, CircuitValidator, ValidationReport, ValidationError};
+pub use circuit::netlist as circuit_netlist;
+pub use circuit::validation as circuit_validation;
 
 /// Core error types for the OpenCircuit application
 #[derive(thiserror::Error, Debug)]

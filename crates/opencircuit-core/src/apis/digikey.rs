@@ -4,7 +4,7 @@
 //! and availability information directly from their inventory.
 
 use super::{ApiError, BaseApiClient};
-use crate::{Component, ComponentCategory, SpecValue, PriceInfo, PriceBreak, AvailabilityInfo};
+use crate::models::{Component, ComponentCategory, SpecValue, PriceInfo, PriceBreak, AvailabilityInfo};
 use anyhow::Result;
 use base64::{Engine as _, engine::general_purpose};
 use chrono::{DateTime, Utc};

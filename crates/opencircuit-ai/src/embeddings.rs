@@ -5,14 +5,82 @@
 //! - Similarity search for component recommendations
 //! - Semantic matching of component requirements
 //! - Caching and persistence of embeddings
+//!
+//! # Overview
+//!
+//! The `embeddings` module enables AI-powered component discovery by converting
+//! component data into vector representations (embeddings) that can be compared
+//! for similarity. This allows users to find components based on semantic meaning
+//! rather than exact keyword matches.
+//!
+//! # Examples
+//!
+//! Basic usage for finding similar components:
+//!
+//! ```rust
+//! use opencircuit_ai::embeddings::ComponentEmbeddingEngine;
+//! use opencircuit_core::models::{Component, ComponentCategory};
+//!
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! let ollama_client = OpenCircuitOllamaClient::new();
+//! let mut engine = ComponentEmbeddingEngine::new(ollama_client).await?;
+//!
+//! // Find components similar to requirements
+//! let components = vec![/* your components */];
+//! let matches = engine
+//!     .find_similar_components_by_requirements(
+//!         "low power microcontroller for IoT sensor",
+//!         &components,
+//!         5
+//!     )
+//!     .await?;
+//!
+//! for match_result in matches {
+//!     println!("Found: {} (similarity: {:.1}%)", 
+//!         match_result.component.part_number,
+//!         match_result.similarity * 100.0);
+//! }
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! # Architecture
+//!
+//! The module consists of several key components:
+//!
+//! - [`ComponentEmbeddingEngine`]: Main orchestrator for embedding operations
+//! - [`ComponentEmbedding`]: Stores vector representations and metadata
+//! - [`SimilarityMatch`]: Results from similarity searches
+//! - [`utils`]: Helper functions for common operations
+//!
+//! # Performance Considerations
+//!
+//! - Embeddings are cached in memory to avoid recomputation
+//! - Cache can be cleared with [`ComponentEmbeddingEngine::clear_cache()`]
+//! - Memory usage scales with number of components cached
+//! - Use batch operations for processing large component sets
+//!
+//! # Model Configuration
+//!
+//! The default embedding model is "nomic-embed-text", but can be changed:
+//!
+//! ```rust
+//! # use opencircuit_ai::embeddings::ComponentEmbeddingEngine;
+//! # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+//! # let ollama_client = OpenCircuitOllamaClient::new();
+//! # let mut engine = ComponentEmbeddingEngine::new(ollama_client).await?;
+//! engine.set_embedding_model("llama2:7b".to_string());
+//! # Ok(())
+//! # }
+//! ```
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use opencircuit_core::{
-    models::{Component, ComponentCategory, SpecValue},
+    models::{Component, ComponentCategory},
     OpenCircuitError,
 };
-use crate::models::{AiModel, AiResponse};
+
 use crate::ollama_client::OpenCircuitOllamaClient;
 
 type Result<T> = std::result::Result<T, OpenCircuitError>;
@@ -31,6 +99,15 @@ pub struct ComponentEmbedding {
 }
 
 /// Metadata associated with an embedding
+///
+/// Provides contextual information about how an embedding was generated,
+/// including the source component category, key specifications used,
+/// the model that created the embedding, and its dimensionality.
+///
+/// # Usage
+///
+/// This metadata helps track embedding provenance and enables
+/// compatibility checks when comparing embeddings from different sources.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmbeddingMetadata {
     /// Component category
@@ -44,6 +121,23 @@ pub struct EmbeddingMetadata {
 }
 
 /// Similarity search result
+///
+/// Represents a component that matched against a query, along with
+/// similarity metrics and human-readable explanations.
+///
+/// # Fields
+///
+/// - `component`: The actual component that matched
+/// - `similarity`: Score from 0.0 to 1.0 indicating relevance
+/// - `match_reason`: Natural language explanation of the match
+///
+/// # Interpretation
+///
+/// Similarity scores can be interpreted as:
+/// - 0.8-1.0: Excellent match
+/// - 0.6-0.8: Good match
+/// - 0.4-0.6: Fair match
+/// - 0.0-0.4: Basic match
 #[derive(Debug, Clone)]
 pub struct SimilarityMatch {
     /// Component that matched
@@ -55,6 +149,35 @@ pub struct SimilarityMatch {
 }
 
 /// Component embedding generator and search engine
+///
+/// Main orchestrator for all embedding-related operations including:
+/// - Generating embeddings from components
+/// - Finding similar components
+/// - Managing embedding cache
+/// - Configuring embedding models
+///
+/// # Thread Safety
+///
+/// This struct is not `Send` or `Sync` due to internal caching.
+/// Create separate instances for concurrent operations.
+///
+/// # Example
+///
+/// ```rust
+/// # use opencircuit_ai::embeddings::ComponentEmbeddingEngine;
+/// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+/// let client = OpenCircuitOllamaClient::new();
+/// let mut engine = ComponentEmbeddingEngine::new(client).await?;
+///
+/// // Cache management
+/// let (cached_count, memory_usage) = engine.cache_stats();
+/// println!("Cache: {} items, ~{} bytes", cached_count, memory_usage);
+///
+/// // Clear cache if needed
+/// engine.clear_cache();
+/// # Ok(())
+/// # }
+/// ```
 pub struct ComponentEmbeddingEngine {
     /// Ollama client for generating embeddings
     ollama_client: OpenCircuitOllamaClient,
@@ -66,6 +189,30 @@ pub struct ComponentEmbeddingEngine {
 
 impl ComponentEmbeddingEngine {
     /// Create a new embedding engine
+    ///
+    /// Initializes a new `ComponentEmbeddingEngine` with the provided Ollama client.
+    /// The engine starts with an empty cache and uses "nomic-embed-text" as the
+    /// default embedding model.
+    ///
+    /// # Arguments
+    ///
+    /// * `ollama_client` - Configured Ollama client for embedding generation
+    ///
+    /// # Returns
+    ///
+    /// Returns a new `ComponentEmbeddingEngine` instance or an error if initialization fails.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use opencircuit_ai::embeddings::ComponentEmbeddingEngine;
+    /// # use opencircuit_ai::ollama_client::OpenCircuitOllamaClient;
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = OpenCircuitOllamaClient::new();
+    /// let engine = ComponentEmbeddingEngine::new(client).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn new(ollama_client: OpenCircuitOllamaClient) -> Result<Self> {
         Ok(Self {
             ollama_client,
@@ -75,6 +222,44 @@ impl ComponentEmbeddingEngine {
     }
 
     /// Generate embedding for a component
+    ///
+    /// Creates a vector embedding for a given component by converting its
+    /// specifications and metadata into a text representation, then generating
+    /// an embedding using the configured model.
+    ///
+    /// # Arguments
+    ///
+    /// * `component` - The component to generate an embedding for
+    ///
+    /// # Returns
+    ///
+    /// Returns a `ComponentEmbedding` containing the vector representation and metadata.
+    ///
+    /// # Caching
+    ///
+    /// Generated embeddings are cached by component ID to avoid recomputation.
+    /// Use [`clear_cache()`] to manually clear the cache if needed.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use opencircuit_ai::embeddings::ComponentEmbeddingEngine;
+    /// # use opencircuit_core::models::{Component, ComponentCategory};
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let client = OpenCircuitOllamaClient::new();
+    /// # let mut engine = ComponentEmbeddingEngine::new(client).await?;
+    /// let component = Component::new(
+    ///     "R1234".to_string(),
+    ///     "TestCorp".to_string(),
+    ///     ComponentCategory::Resistors,
+    ///     "10k ohm resistor".to_string(),
+    /// );
+    ///
+    /// let embedding = engine.generate_component_embedding(&component).await?;
+    /// println!("Generated {}-dimensional embedding", embedding.vector.len());
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn generate_component_embedding(&mut self, component: &Component) -> Result<ComponentEmbedding> {
         // Check cache first
         if let Some(cached) = self.embeddings_cache.get(&component.id) {
@@ -109,6 +294,20 @@ impl ComponentEmbeddingEngine {
     }
 
     /// Find similar components based on a reference component
+    ///
+    /// **Deprecated**: This method currently returns a placeholder implementation.
+    /// For production use, prefer [`find_similar_components_by_requirements()`] or
+    /// [`find_components_by_category_semantic()`] with a populated component database.
+    ///
+    /// # Arguments
+    ///
+    /// * `component` - The reference component to find matches for
+    /// * `_limit` - Maximum number of results to return (currently ignored)
+    ///
+    /// # Returns
+    ///
+    /// Currently returns a single perfect match with the reference component itself.
+    /// This behavior will change once component database integration is complete.
     pub async fn find_similar_components(
         &mut self,
         component: &Component,
@@ -127,6 +326,55 @@ impl ComponentEmbeddingEngine {
     }
 
     /// Find similar components based on requirements text
+    ///
+    /// Performs semantic search by converting the requirements text into an embedding
+    /// and comparing it against embeddings of provided components. Returns the most
+    /// relevant matches based on cosine similarity.
+    ///
+    /// # Arguments
+    ///
+    /// * `requirements` - Natural language description of what you need
+    /// * `components` - List of components to search through
+    /// * `max_results` - Maximum number of results to return
+    ///
+    /// # Returns
+    ///
+    /// Returns a vector of [`SimilarityMatch`] sorted by similarity score (highest first).
+    ///
+    /// # Filtering
+    ///
+    /// Only components with similarity scores above 0.3 are included in results.
+    /// This threshold can be adjusted in future versions.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use opencircuit_ai::embeddings::ComponentEmbeddingEngine;
+    /// # use opencircuit_core::models::{Component, ComponentCategory};
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let client = OpenCircuitOllamaClient::new();
+    /// # let mut engine = ComponentEmbeddingEngine::new(client).await?;
+    ///
+    /// let components = vec![
+    ///     Component::new("R1".to_string(), "Corp".to_string(), ComponentCategory::Resistors, "1k resistor".to_string()),
+    ///     Component::new("R2".to_string(), "Corp".to_string(), ComponentCategory::Resistors, "10k resistor".to_string()),
+    ///     Component::new("C1".to_string(), "Corp".to_string(), ComponentCategory::Capacitors, "100nF capacitor".to_string()),
+    /// ];
+    ///
+    /// let matches = engine
+    ///     .find_similar_components_by_requirements(
+    ///         "high resistance for voltage divider",
+    ///         &components,
+    ///         3
+    ///     )
+    ///     .await?;
+    ///
+    /// for m in matches {
+    ///     println!("Match: {} ({:.1}%)", m.component.part_number, m.similarity * 100.0);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn find_similar_components_by_requirements(
         &mut self,
         requirements: &str,
@@ -162,6 +410,51 @@ impl ComponentEmbeddingEngine {
     }
 
     /// Find components by category with semantic search
+    ///
+    /// Combines category filtering with semantic search to find components
+    /// that match both a specific category and semantic requirements.
+    ///
+    /// # Arguments
+    ///
+    /// * `category` - The component category to filter by
+    /// * `requirements` - Natural language description of requirements
+    /// * `components` - List of components to search through
+    /// * `max_results` - Maximum number of results to return
+    ///
+    /// # Returns
+    ///
+    /// Returns filtered and sorted [`SimilarityMatch`] results, empty if no
+    /// components match the specified category.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use opencircuit_ai::embeddings::ComponentEmbeddingEngine;
+    /// # use opencircuit_core::models::{Component, ComponentCategory};
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let client = OpenCircuitOllamaClient::new();
+    /// # let mut engine = ComponentEmbeddingEngine::new(client).await?;
+    ///
+    /// let components = vec![
+    ///     Component::new("R1".to_string(), "Corp".to_string(), ComponentCategory::Resistors, "1k resistor".to_string()),
+    ///     Component::new("C1".to_string(), "Corp".to_string(), ComponentCategory::Capacitors, "100nF capacitor".to_string()),
+    ///     Component::new("R2".to_string(), "Corp".to_string(), ComponentCategory::Resistors, "10k resistor".to_string()),
+    /// ];
+    ///
+    /// // Find only resistors matching specific requirements
+    /// let resistor_matches = engine
+    ///     .find_components_by_category_semantic(
+    ///         &ComponentCategory::Resistors,
+    ///         "high precision for audio circuit",
+    ///         &components,
+    ///         5
+    ///     )
+    ///     .await?;
+    ///
+    /// assert_eq!(resistor_matches.len(), 2); // Only R1 and R2
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn find_components_by_category_semantic(
         &mut self,
         category: &ComponentCategory,
@@ -297,11 +590,56 @@ impl ComponentEmbeddingEngine {
     }
 
     /// Clear the embeddings cache
+    ///
+    /// Removes all cached embeddings from memory. This is useful when:
+    /// - Switching embedding models
+    /// - Memory usage becomes too high
+    /// - Cache invalidation is needed
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use opencircuit_ai::embeddings::ComponentEmbeddingEngine;
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let client = OpenCircuitOllamaClient::new();
+    /// # let mut engine = ComponentEmbeddingEngine::new(client).await?;
+    /// let (count, _) = engine.cache_stats();
+    /// println!("Cache size before: {} items", count);
+    ///
+    /// engine.clear_cache();
+    ///
+    /// let (count, _) = engine.cache_stats();
+    /// println!("Cache size after: {} items", count);
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn clear_cache(&mut self) {
         self.embeddings_cache.clear();
     }
 
     /// Get cache statistics
+    ///
+    /// Returns information about the current cache state including item count
+    /// and estimated memory usage.
+    ///
+    /// # Returns
+    ///
+    /// A tuple containing:
+    /// - `usize`: Number of cached embeddings
+    /// - `usize`: Estimated memory usage in bytes (rough approximation)
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use opencircuit_ai::embeddings::ComponentEmbeddingEngine;
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let client = OpenCircuitOllamaClient::new();
+    /// # let mut engine = ComponentEmbeddingEngine::new(client).await?;
+    /// let (count, memory) = engine.cache_stats();
+    /// println!("Cache contains {} items (~{} KB)", count, memory / 1024);
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn cache_stats(&self) -> (usize, usize) {
         let count = self.embeddings_cache.len();
         let memory_estimate = count * 384 * 4; // Rough estimate: 384 floats * 4 bytes
@@ -309,6 +647,35 @@ impl ComponentEmbeddingEngine {
     }
 
     /// Set the embedding model
+    ///
+    /// Changes the model used for generating embeddings. This automatically
+    /// clears the cache since cached embeddings from the old model are incompatible.
+    ///
+    /// # Arguments
+    ///
+    /// * `model` - Name of the new embedding model to use
+    ///
+    /// # Warning
+    ///
+    /// This operation clears the entire cache. All previously generated
+    /// embeddings will need to be regenerated.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use opencircuit_ai::embeddings::ComponentEmbeddingEngine;
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let client = OpenCircuitOllamaClient::new();
+    /// # let mut engine = ComponentEmbeddingEngine::new(client).await?;
+    /// // Switch to a different embedding model
+    /// engine.set_embedding_model("llama2:7b".to_string());
+    ///
+    /// // Cache is now empty due to model change
+    /// let (count, _) = engine.cache_stats();
+    /// assert_eq!(count, 0);
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn set_embedding_model(&mut self, model: String) {
         self.embedding_model = model;
         // Clear cache when model changes
@@ -317,10 +684,74 @@ impl ComponentEmbeddingEngine {
 }
 
 /// Utility functions for embedding operations
+///
+/// This module provides convenient helper functions for common embedding tasks
+/// such as batch processing, requirements analysis, and finding the best match.
+///
+/// # Overview
+///
+/// The utils module simplifies common workflows when working with embeddings:
+///
+/// - Batch processing of multiple components
+/// - Creating embeddings from requirements text
+/// - Finding single best matches
+///
+/// # Examples
+///
+/// Batch processing components:
+///
+/// ```rust
+/// # use opencircuit_ai::embeddings::{ComponentEmbeddingEngine, utils};
+/// # use opencircuit_core::models::{Component, ComponentCategory};
+/// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+/// # let client = OpenCircuitOllamaClient::new();
+/// # let mut engine = ComponentEmbeddingEngine::new(client).await?;
+/// let components = vec![
+///     Component::new("R1".to_string(), "Corp".to_string(), ComponentCategory::Resistors, "1k resistor".to_string()),
+///     Component::new("C1".to_string(), "Corp".to_string(), ComponentCategory::Capacitors, "100nF capacitor".to_string()),
+/// ];
+///
+/// // Batch generate embeddings for all components
+/// let embeddings = utils::batch_generate_embeddings(&mut engine, &components).await?;
+/// println!("Generated {} embeddings", embeddings.len());
+/// # Ok(())
+/// # }
+/// ```
 pub mod utils {
     use super::*;
 
     /// Create a requirements embedding from user input
+    ///
+    /// Generates a vector embedding directly from natural language requirements
+    /// without needing to create a temporary component. Useful for preprocessing
+    /// search queries.
+    ///
+    /// # Arguments
+    ///
+    /// * `engine` - The embedding engine instance
+    /// * `requirements` - Natural language description of requirements
+    ///
+    /// # Returns
+    ///
+    /// Returns a vector embedding suitable for similarity comparisons.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use opencircuit_ai::embeddings::{ComponentEmbeddingEngine, utils};
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let client = OpenCircuitOllamaClient::new();
+    /// # let mut engine = ComponentEmbeddingEngine::new(client).await?;
+    ///
+    /// let requirements_embedding = utils::create_requirements_embedding(
+    ///     &mut engine,
+    ///     "low noise operational amplifier for audio preamp"
+    /// ).await?;
+    ///
+    /// println!("Requirements embedding dimension: {}", requirements_embedding.len());
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn create_requirements_embedding(
         engine: &mut ComponentEmbeddingEngine,
         requirements: &str,
@@ -329,6 +760,50 @@ pub mod utils {
     }
 
     /// Batch process components for embedding generation
+    ///
+    /// Efficiently generates embeddings for multiple components in sequence.
+    /// This function handles errors gracefully, skipping problematic components
+    /// while continuing with the rest.
+    ///
+    /// # Arguments
+    ///
+    /// * `engine` - The embedding engine instance
+    /// * `components` - List of components to process
+    ///
+    /// # Returns
+    ///
+    /// Returns a vector of successfully generated embeddings. Components that
+    /// fail to generate embeddings are logged and skipped.
+    ///
+    /// # Performance
+    ///
+    /// This function processes components sequentially. For large datasets,
+    /// consider implementing parallel processing in your application.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use opencircuit_ai::embeddings::{ComponentEmbeddingEngine, utils};
+    /// # use opencircuit_core::models::{Component, ComponentCategory};
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let client = OpenCircuitOllamaClient::new();
+    /// # let mut engine = ComponentEmbeddingEngine::new(client).await?;
+    ///
+    /// let components = vec![
+    ///     Component::new("R1".to_string(), "Corp".to_string(), ComponentCategory::Resistors, "1k resistor".to_string()),
+    ///     Component::new("C1".to_string(), "Corp".to_string(), ComponentCategory::Capacitors, "100nF capacitor".to_string()),
+    ///     Component::new("IC1".to_string(), "Corp".to_string(), ComponentCategory::IntegratedCircuits, "LM358 op-amp".to_string()),
+    /// ];
+    ///
+    /// let embeddings = utils::batch_generate_embeddings(&mut engine, &components).await?;
+    ///
+    /// for embedding in embeddings {
+    ///     println!("Generated embedding for {}: {} dimensions", 
+    ///         embedding.component_id, embedding.vector.len());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn batch_generate_embeddings(
         engine: &mut ComponentEmbeddingEngine,
         components: &[Component],
@@ -348,6 +823,51 @@ pub mod utils {
     }
 
     /// Find the best matching component for specific requirements
+    ///
+    /// Convenience function that returns the single best match from a list of
+    /// components based on semantic similarity to the requirements.
+    ///
+    /// # Arguments
+    ///
+    /// * `engine` - The embedding engine instance
+    /// * `requirements` - Natural language description of requirements
+    /// * `components` - List of components to search through
+    ///
+    /// # Returns
+    ///
+    /// Returns `Some(SimilarityMatch)` for the best match, or `None` if:
+    /// - The components list is empty
+    /// - No components meet the minimum similarity threshold (0.3)
+    /// - All components fail to generate embeddings
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use opencircuit_ai::embeddings::{ComponentEmbeddingEngine, utils};
+    /// # use opencircuit_core::models::{Component, ComponentCategory};
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let client = OpenCircuitOllamaClient::new();
+    /// # let mut engine = ComponentEmbeddingEngine::new(client).await?;
+    ///
+    /// let components = vec![
+    ///     Component::new("R1".to_string(), "Corp".to_string(), ComponentCategory::Resistors, "1k resistor".to_string()),
+    ///     Component::new("R2".to_string(), "Corp".to_string(), ComponentCategory::Resistors, "10k resistor".to_string()),
+    /// ];
+    ///
+    /// if let Some(best_match) = utils::find_best_match(
+    ///     &mut engine,
+    ///     "high resistance for voltage divider",
+    ///     &components
+    /// ).await? {
+    ///     println!("Best match: {} ({:.1}%)", 
+    ///         best_match.component.part_number,
+    ///         best_match.similarity * 100.0);
+    /// } else {
+    ///     println!("No suitable matches found");
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn find_best_match(
         engine: &mut ComponentEmbeddingEngine,
         requirements: &str,
